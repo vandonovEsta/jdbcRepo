@@ -18,6 +18,9 @@ public class DbHelper {
         }
     }
 
+    private String url;
+    private String user;
+    private String password;
     private Connection connection;
     private PropertiesHelper propertiesHelper;
 
@@ -30,12 +33,16 @@ public class DbHelper {
         return instance;
     }
 
-    //TODO: Change to private?
+    private void prepareConnectionDetails() throws IOException {
+        url = propertiesHelper.readProperty("url");
+        user = propertiesHelper.readProperty("user");
+        password = propertiesHelper.readProperty("password");
+    }
+    
     private void createConnection() throws IOException, SQLException {
         try {
-
-            connection = DriverManager.getConnection(propertiesHelper.readProperty("url"),
-                    propertiesHelper.readProperty("user"), propertiesHelper.readProperty("password"));
+            prepareConnectionDetails();
+            connection = DriverManager.getConnection(url, user, password);
 
         } catch (IOException | SQLException e) {
             throw e;

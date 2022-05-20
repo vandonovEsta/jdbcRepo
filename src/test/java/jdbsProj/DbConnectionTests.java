@@ -16,7 +16,7 @@ public class DbConnectionTests {
     DbHelper dbHelper;
 
     @BeforeEach
-    public void initAll() throws IOException, SQLException {
+    public void init() throws IOException, SQLException {
         dbHelper = DbHelper.getInstance();
         connection = dbHelper.getConnection();
     }
