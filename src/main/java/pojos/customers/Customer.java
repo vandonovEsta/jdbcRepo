@@ -1,14 +1,23 @@
-package pojos;
+package pojos.customers;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.Date;
 
 @Entity
-public @Data class Customer {
-    @Column(name = "customer_id")
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Customer {
+    @Id
+    @Column(name = "customer_id", nullable = false)
     private Integer id;
     @Column(name = "name")
     private String name;
@@ -30,7 +39,7 @@ public @Data class Customer {
     private String reasonForDeactivation;
     @Column(name = "notes")
     private String notes;
-    @Column(name = "address_id")
+    @Column(name = "addres_id")
     private Integer addressId;
     @Column(name = "order_id")
     private Integer orderId;

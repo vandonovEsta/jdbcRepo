@@ -5,12 +5,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DbHelper {
-    private static DbHelper instance;
+public class SingleConnectionHelper {
+    private static SingleConnectionHelper instance;
 
     static {
         try {
-            instance = new DbHelper();
+            instance = new SingleConnectionHelper();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {
@@ -24,12 +24,12 @@ public class DbHelper {
     private Connection connection;
     private PropertiesHelper propertiesHelper;
 
-    private DbHelper() throws IOException, SQLException {
+    private SingleConnectionHelper() throws IOException, SQLException {
         propertiesHelper = new PropertiesHelper();
         createConnection();
     }
 
-    public static DbHelper getInstance() {
+    public static SingleConnectionHelper getInstance() {
         return instance;
     }
 
@@ -38,7 +38,8 @@ public class DbHelper {
         user = propertiesHelper.readProperty("user");
         password = propertiesHelper.readProperty("password");
     }
-    
+
+    //TODO: Change to private?
     private void createConnection() throws IOException, SQLException {
         try {
             prepareConnectionDetails();

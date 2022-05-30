@@ -1,9 +1,9 @@
 package jdbsProj;
 
-import helpers.DbHelper;
+import helpers.SingleConnectionHelper;
 import lombok.Cleanup;
 import mappers.ResultSetMapper;
-import pojos.Customer;
+import pojos.customers.Customer;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -18,10 +18,10 @@ public class CustomerCreator {
     public static void main(String[] args) {
         try {
             ResultSetMapper<Customer> resultSetMapper = new ResultSetMapper<Customer>();
-            ResultSet resultSet = null;
-            DbHelper dbHelper = DbHelper.getInstance();
-            @Cleanup Connection connection = dbHelper.getConnection();
-            PreparedStatement statement = connection.prepareStatement(SELECT_ALL_FROM_CUSTOMERS_GET_ONLY_FIRST_ROW);
+            SingleConnectionHelper singleConnectionHelper = SingleConnectionHelper.getInstance();
+            @Cleanup ResultSet resultSet = null;
+            @Cleanup Connection connection = singleConnectionHelper.getConnection();
+            @Cleanup PreparedStatement statement = connection.prepareStatement(SELECT_ALL_FROM_CUSTOMERS_GET_ONLY_FIRST_ROW);
             resultSet = statement.executeQuery();
             List<Customer> customers = resultSetMapper.mapResultSetToObject(resultSet, Customer.class);
 

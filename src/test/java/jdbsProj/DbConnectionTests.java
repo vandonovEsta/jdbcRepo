@@ -1,8 +1,8 @@
 package jdbsProj;
 
-import helpers.DbHelper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import helpers.SingleConnectionHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,24 +11,30 @@ import java.sql.SQLException;
 
 import static org.junit.Assert.assertFalse;
 
-public class DbConnectionTests {
-    Connection connection;
-    DbHelper dbHelper;
 
-    @BeforeEach
-    public void init() throws IOException, SQLException {
-        dbHelper = DbHelper.getInstance();
-        connection = dbHelper.getConnection();
+public class DbConnectionTests {
+    private static Connection connection;
+    private static SingleConnectionHelper singleConnectionHelper;
+
+    @BeforeAll
+    public static void init() throws IOException, SQLException {
+        System.out.println("Before All is executed");
+        singleConnectionHelper = SingleConnectionHelper.getInstance();
+        connection = singleConnectionHelper.getConnection();
+    }
+
+    @AfterAll
+    public static void tearDown() throws SQLException {
+        System.out.println("After all is executed");
+        connection.close();
     }
 
     @Test
     public void onlyOneConnectionIsReturned() throws SQLException, IOException {
-        assertFalse(connection.isClosed());
-    }
+        System.out.println("Test is executed");
 
-    @AfterEach
-    public void tearDown() throws SQLException {
-        connection.close();
+        assertFalse(connection.isClosed());
+
     }
 
 }
