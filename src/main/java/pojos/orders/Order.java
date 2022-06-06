@@ -27,5 +27,8 @@ public class Order {
     private Date dateOfOrder;
     @Column(name = "date_order_confirmed")
     private Date dateOrderConfirmed;
+    @Column(name = "customer_id")
+    private Integer customerId;
+
 
 }

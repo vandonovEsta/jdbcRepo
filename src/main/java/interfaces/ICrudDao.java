@@ -11,7 +11,7 @@ public interface ICrudDao<T> {
      *
      * @return
      */
-    public List<T> getAll();
+    public List<T> getAll() throws SQLException;
 
     /**
      * returns the name of the table
@@ -78,7 +78,7 @@ public interface ICrudDao<T> {
      *
      * @return
      */
-    public Integer getRandomId();
+    public Integer getRandomId() throws SQLException;
 
     /**
      * returns a list of random ids.
@@ -89,5 +89,8 @@ public interface ICrudDao<T> {
      *                   Ids is bigger than the count of rows in the table.
      */
     public List<Integer> getRandomIds(int numberOrIds) throws Exception;
+
+    void update() throws SQLException;
+
 
 }

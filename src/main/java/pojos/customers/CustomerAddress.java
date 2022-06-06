@@ -17,7 +17,7 @@ import javax.persistence.Id;
 public class CustomerAddress {
     @Id
     @Column(name = "address_id", nullable = false)
-    private Long id;
+    private Integer id;
     @Column(name = "address")
     private String address;
     @Column(name = "city")
@@ -30,6 +30,5 @@ public class CustomerAddress {
     private Integer postalCode;
     @Column(name = "country")
     private String country;
-
 
 }

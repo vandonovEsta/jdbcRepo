@@ -3,6 +3,7 @@ package daos;
 import drivers.DataBaseDriver;
 import interfaces.ICrudDao;
 import pojos.products.Product;
+import utils.Formatter;
 import utils.Randomizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +21,6 @@ public class ProductsDao implements ICrudDao<Product> {
     public ProductsDao() throws SQLException {
         dataBaseDriver = DataBaseDriver.getInstance();
         products = new ArrayList<>();
-        products.addAll(dataBaseDriver.getAllEntities(table, Product.class));
     }
 
     /**
@@ -29,7 +29,8 @@ public class ProductsDao implements ICrudDao<Product> {
      * @return
      */
     @Override
-    public List<Product> getAll() {
+    public List<Product> getAll() throws SQLException {
+        products.addAll(dataBaseDriver.getAllEntities(table, Product.class));
         return products;
     }
 
@@ -55,6 +56,7 @@ public class ProductsDao implements ICrudDao<Product> {
     @Override
     public void save(Product product) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         dataBaseDriver.insetToTable(table, product);
+        update();
     }
 
     /**
@@ -89,14 +91,10 @@ public class ProductsDao implements ICrudDao<Product> {
      */
     @Override
     public Product getById(int id) throws SQLException {
-        Product result = null;
-        for (Product product :
-                products) {
-            if (product.getId() == id) {
-                result = product;
-            }
-        }
-        return result;
+        List<Product> result;
+        result = dataBaseDriver.getAllEqualTo(table, Product.class, this.id, String.valueOf(id));
+
+        return result.get(0);
     }
 
     /**
@@ -108,13 +106,10 @@ public class ProductsDao implements ICrudDao<Product> {
      */
     @Override
     public List<Product> getByIds(List<Integer> ids) throws SQLException {
-        List<Product> result = new ArrayList<>();
-        for (Product product :
-                products) {
-            if (ids.contains(product.getId())) {
-                result.add(product);
-            }
-        }
+        List<Product> result;
+        String idsString = Formatter.listToString(ids);
+        result = dataBaseDriver.getAllIn(table, Product.class, this.id, idsString);
+
 
         return result;
     }
@@ -127,7 +122,7 @@ public class ProductsDao implements ICrudDao<Product> {
      */
     @Override
     public Integer getAllRecordsCount() throws SQLException {
-        return products.size();
+        return dataBaseDriver.countBy(table, id);
     }
 
     /**
@@ -136,7 +131,8 @@ public class ProductsDao implements ICrudDao<Product> {
      * @return
      */
     @Override
-    public Integer getRandomId() {
+    public Integer getRandomId() throws SQLException {
+        update();
         Product product = Randomizer.returnRandomFromList(products);
         return product.getId().intValue();
     }
@@ -151,6 +147,7 @@ public class ProductsDao implements ICrudDao<Product> {
      */
     @Override
     public List<Integer> getRandomIds(int numberOrIds) throws Exception {
+        update();
         List<Integer> randomIds = new ArrayList<>();
         if (numberOrIds <= products.size()) {
             while (randomIds.size() < numberOrIds) {
@@ -163,5 +160,21 @@ public class ProductsDao implements ICrudDao<Product> {
             throw new Exception("Not enough unique entries in result set!");
         }
         return randomIds;
+    }
+
+    @Override
+    public void update() throws SQLException {
+        products = dataBaseDriver.getAllEntities(table, Product.class);
+    }
+
+    public Long getLastPk() throws SQLException {
+        Long id = 0L;
+
+        id = dataBaseDriver.getLastPk(table, this.id).longValue();
+        if (id == null) {
+            return 1L;
+        }
+        return id;
+
     }
 }

@@ -12,9 +12,9 @@ public class CustomerFaker {
     public static Customer createFakeCustomer() {
         Faker faker = new Faker();
         Customer customer;
-        Integer customerId = faker.number().randomDigit();
-        String customerName = faker.funnyName().name();
-        String email = faker.letterify("?????@??.###");
+        Integer customerId = faker.number().numberBetween(1, Integer.MAX_VALUE);
+        String customerName = faker.funnyName().name().replace("'", "");
+        String email = faker.letterify("?????@??.???");
         String phone = faker.numerify("+359#########");
         int age = Integer.valueOf(faker.numerify("##"));
         boolean gdpr = faker.bool().bool();
@@ -28,9 +28,9 @@ public class CustomerFaker {
             reasonForDeactivation = null;
         } else {
             dateTimeDeactivated = new Date();
-            reasonForDeactivation = faker.chuckNorris().fact();
+            reasonForDeactivation = faker.ancient().primordial();
         }
-        String notes = faker.backToTheFuture().quote();
+        String notes = faker.animal().name();
         int address_id = 0;
         int order_id = 0;
 

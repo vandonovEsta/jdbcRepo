@@ -3,6 +3,7 @@ package daos;
 import drivers.DataBaseDriver;
 import interfaces.ICrudDao;
 import pojos.customers.Customer;
+import utils.Formatter;
 import utils.Randomizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -16,16 +17,17 @@ public class CustomerDao implements ICrudDao<Customer> {
     private String table = "customers";
     private String id = "customer_id";
 
-    public CustomerDao() throws SQLException {
+    public CustomerDao() {
         dataBaseDriver = DataBaseDriver.getInstance();
         customers = new ArrayList<>();
-        customers.addAll(dataBaseDriver.getAllEntities(table, Customer.class));
     }
 
     @Override
-    public List<Customer> getAll() {
+    public List<Customer> getAll() throws SQLException {
+        update();
         return customers;
     }
+
 
     @Override
     public String getTableName() {
@@ -37,6 +39,7 @@ public class CustomerDao implements ICrudDao<Customer> {
             throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
 
         dataBaseDriver.insetToTable(table, customer);
+        update();
     }
 
     @Override
@@ -51,43 +54,38 @@ public class CustomerDao implements ICrudDao<Customer> {
 
     @Override
     public Customer getById(int id) throws SQLException {
-        Customer result = null;
-        for (Customer customer :
-                customers) {
-            if (customer.getId() == id) {
-                result = customer;
-            }
-        }
-        return result;
+        List<Customer> result;
+        result = dataBaseDriver.getAllEqualTo(table, Customer.class, this.id, String.valueOf(id));
+
+        return result.get(0);
 
     }
 
     @Override
     public List<Customer> getByIds(List<Integer> ids) throws SQLException {
-        List<Customer> result = new ArrayList<>();
-        for (Customer customer :
-                customers) {
-            if (ids.contains(customer.getId())) {
-                result.add(customer);
-            }
-        }
+        List<Customer> result;
+        String idsString = Formatter.listToString(ids);
+        result = dataBaseDriver.getAllIn(table, Customer.class, this.id, idsString);
+
 
         return result;
     }
 
     @Override
     public Integer getAllRecordsCount() throws SQLException {
-        return customers.size();
+        return dataBaseDriver.countBy(table, id);
     }
 
     @Override
-    public Integer getRandomId() {
+    public Integer getRandomId() throws SQLException {
+        update();
         Customer customer = Randomizer.returnRandomFromList(customers);
-        return customer.getId();
+        return customer.getId().intValue();
     }
 
     @Override
     public List<Integer> getRandomIds(int numberOrIds) throws Exception {
+        update();
         List<Integer> randomIds = new ArrayList<>();
         if (numberOrIds <= customers.size()) {
             while (randomIds.size() < numberOrIds) {
@@ -100,5 +98,10 @@ public class CustomerDao implements ICrudDao<Customer> {
             throw new Exception("Not enough unique entries in result set!");
         }
         return randomIds;
+    }
+
+    @Override
+    public void update() throws SQLException {
+        customers = dataBaseDriver.getAllEntities(table, Customer.class);
     }
 }

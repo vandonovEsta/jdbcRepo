@@ -2,7 +2,8 @@ package daos;
 
 import drivers.DataBaseDriver;
 import interfaces.ICrudDao;
-import pojos.customers.Customer;
+import pojos.customers.CustomerAddress;
+import utils.Formatter;
 import utils.Randomizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,17 +11,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomersDao implements ICrudDao<Customer> {
+public class CustomerAddressesDao implements ICrudDao<CustomerAddress> {
 
-    List<Customer> customers;
+    List<CustomerAddress> customerAddresses;
     private DataBaseDriver dataBaseDriver;
-    private String table = "customers";
-    private String id = "customer_id";
+    private String table = "customers_addresses";
+    private String id = "address_id";
 
-    public CustomersDao() throws SQLException {
+    public CustomerAddressesDao() {
         dataBaseDriver = DataBaseDriver.getInstance();
-        customers = new ArrayList<>();
-        customers.addAll(dataBaseDriver.getAllEntities(table, Customer.class));
+        customerAddresses = new ArrayList<>();
     }
 
     /**
@@ -29,8 +29,9 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @return
      */
     @Override
-    public List<Customer> getAll() {
-        return customers;
+    public List<CustomerAddress> getAll() throws SQLException {
+        customerAddresses.addAll(dataBaseDriver.getAllEntities(table, CustomerAddress.class));
+        return customerAddresses;
     }
 
     /**
@@ -53,7 +54,7 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @throws SQLException
      */
     @Override
-    public void save(Customer object) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public void save(CustomerAddress object) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         dataBaseDriver.insetToTable(table, object);
 
     }
@@ -65,7 +66,7 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @throws SQLException
      */
     @Override
-    public void delete(Customer object) throws SQLException {
+    public void delete(CustomerAddress object) throws SQLException {
         dataBaseDriver.deleteBy(table, id, object.getId().intValue());
 
     }
@@ -88,15 +89,11 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @throws SQLException
      */
     @Override
-    public Customer getById(int id) throws SQLException {
-        Customer result = null;
-        for (Customer customer :
-                customers) {
-            if (customer.getId() == id) {
-                result = customer;
-            }
-        }
-        return result;
+    public CustomerAddress getById(int id) throws SQLException {
+        List<CustomerAddress> result;
+        result = dataBaseDriver.getAllEqualTo(table, CustomerAddress.class, this.id, String.valueOf(id));
+
+        return result.get(0);
     }
 
     /**
@@ -107,14 +104,11 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @throws SQLException
      */
     @Override
-    public List<Customer> getByIds(List<Integer> ids) throws SQLException {
-        List<Customer> result = new ArrayList<>();
-        for (Customer customer :
-                customers) {
-            if (ids.contains(customer.getId())) {
-                result.add(customer);
-            }
-        }
+    public List<CustomerAddress> getByIds(List<Integer> ids) throws SQLException {
+        List<CustomerAddress> result;
+        String idsString = Formatter.listToString(ids);
+        result = dataBaseDriver.getAllIn(table, CustomerAddress.class, this.id, idsString);
+
 
         return result;
     }
@@ -127,7 +121,7 @@ public class CustomersDao implements ICrudDao<Customer> {
      */
     @Override
     public Integer getAllRecordsCount() throws SQLException {
-        return customers.size();
+        return dataBaseDriver.countBy(table, id);
     }
 
     /**
@@ -136,8 +130,9 @@ public class CustomersDao implements ICrudDao<Customer> {
      * @return
      */
     @Override
-    public Integer getRandomId() {
-        Customer customer = Randomizer.returnRandomFromList(customers);
+    public Integer getRandomId() throws SQLException {
+        update();
+        CustomerAddress customer = Randomizer.returnRandomFromList(customerAddresses);
         return customer.getId().intValue();
     }
 
@@ -151,8 +146,9 @@ public class CustomersDao implements ICrudDao<Customer> {
      */
     @Override
     public List<Integer> getRandomIds(int numberOrIds) throws Exception {
+        update();
         List<Integer> randomIds = new ArrayList<>();
-        if (numberOrIds <= customers.size()) {
+        if (numberOrIds <= customerAddresses.size()) {
             while (randomIds.size() < numberOrIds) {
                 int randID = getRandomId();
                 if (!randomIds.contains(randID)) {
@@ -163,5 +159,10 @@ public class CustomersDao implements ICrudDao<Customer> {
             throw new Exception("Not enough unique entries in result set!");
         }
         return randomIds;
+    }
+
+    @Override
+    public void update() throws SQLException {
+        customerAddresses = dataBaseDriver.getAllEntities(table, CustomerAddress.class);
     }
 }

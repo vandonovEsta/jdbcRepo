@@ -4,11 +4,12 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import utils.fakers.ProductFaker;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ProductsTests {
     @Test
-    public void createFakeProductTest() {
+    public void createFakeProductTest() throws SQLException {
         Product product = ProductFaker.createFakeProduct();
 
         System.out.println(product);
@@ -17,7 +18,7 @@ public class ProductsTests {
     }
 
     @Test
-    public void createFakeProductsTest() {
+    public void createFakeProductsTest() throws SQLException {
         List<Product> products;
         products = ProductFaker.createFakeProducts();
 

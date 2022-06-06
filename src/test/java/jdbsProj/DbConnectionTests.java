@@ -31,9 +31,9 @@ public class DbConnectionTests {
 
     @Test
     public void onlyOneConnectionIsReturned() throws SQLException, IOException {
-        System.out.println("Test is executed");
 
         assertFalse(connection.isClosed());
+        System.out.println("Test is executed");
 
     }
 

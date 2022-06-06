@@ -5,6 +5,7 @@ import mappers.ResultSetMapper;
 import org.apache.commons.beanutils.BeanUtils;
 
 import javax.persistence.Column;
+import javax.persistence.JoinColumn;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -55,6 +56,7 @@ public class DataBaseDriver implements AutoCloseable {
     public <T> List<T> getAllEntities(String tableName, Class<T> object) throws SQLException {
 
         preparedStatement = connection.prepareStatement(SELECT_ALL + tableName);
+
         return returnList(object);
     }
 
@@ -68,6 +70,31 @@ public class DataBaseDriver implements AutoCloseable {
         preparedStatement = connection
                 .prepareStatement(SELECT_ALL + tableName + String.format(WHERE_IS_EQUAL_TO, columnName, equalTo));
         return returnList(object);
+    }
+
+    public <T> List<T> getAllIn(String tableName, Class<T> object, String columnName, String inValues)
+            throws SQLException {
+        String finalizedQuery = String.format(SELECT_IN, tableName, columnName, inValues);
+        preparedStatement = connection
+                .prepareStatement(finalizedQuery);
+        System.out.println(finalizedQuery);
+        return returnList(object);
+    }
+
+    public Integer getLastPk(String table, String columnName) throws SQLException {
+        Integer result = null;
+        String finalizedQuery = String.format(SELECT_MAX_PK, columnName, table, columnName);
+
+        preparedStatement = connection
+                .prepareStatement(String.format(SELECT_MAX_PK, columnName, table, columnName));
+        resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            result = resultSet.getInt(1);
+        }
+        if (result == null) {
+            return 1;
+        }
+        return result;
     }
 
     public Integer countBy(String tableName, String columnName) throws SQLException {
@@ -103,7 +130,7 @@ public class DataBaseDriver implements AutoCloseable {
 
     public void insetToTable(String table, Object obj)
             throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-//        preparedStatement.executeUpdate();
+
 
         List<String> columnNames = new ArrayList<>();
         String formattedNames;
@@ -113,7 +140,9 @@ public class DataBaseDriver implements AutoCloseable {
         for (Field field :
                 fields) {
             Column column = field.getAnnotation(Column.class);
-            columnNames.add(column.name());
+            if (!column.annotationType().equals(JoinColumn.class)) {
+                columnNames.add(column.name());
+            }
             Object value = BeanUtils.getProperty(obj, field.getName());
             if (value instanceof String) {
                 if (columnValues.length() < 1) {
@@ -140,6 +169,8 @@ public class DataBaseDriver implements AutoCloseable {
         formattedNames = columnNames
                 .toString().replace("[", "").replace("]", "").trim();
         finalizedQuery = String.format(INSERT_INTO_TABLE, table, formattedNames, columnValues);
+
+        finalizedQuery.replaceAll("'", " ");
 
         System.out.println(finalizedQuery);
         preparedStatement = connection

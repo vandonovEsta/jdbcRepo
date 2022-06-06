@@ -34,7 +34,7 @@ public class CustomerAddressTests {
 
         for (CustomerAddress customerAddress :
                 customerAddresses) {
-            Long id = customerAddress.getId();
+            Integer id = customerAddress.getId();
             Assert.assertNotNull("Address is null for customerAddress with id:" + id,
                     customerAddress.getAddress());
             Assert.assertNotNull("City is null for customerAddress with id:" + id,

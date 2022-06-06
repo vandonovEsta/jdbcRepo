@@ -2,8 +2,7 @@ package daos;
 
 import drivers.DataBaseDriver;
 import interfaces.ICrudDao;
-import pojos.orders.Order;
-import utils.Formatter;
+import pojos.orders.OrderedQuality;
 import utils.Randomizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,15 +10,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrdersDao implements ICrudDao<Order> {
-    List<Order> orders;
+public class OrderedQuantityDao implements ICrudDao<OrderedQuality> {
+    List<OrderedQuality> orderedQualities;
     private DataBaseDriver dataBaseDriver;
-    private String table = "orders";
+    private String table = "ordered_quantity";
     private String id = "order_id";
+    private String productId = "product_id";
 
-    public OrdersDao() {
+    public OrderedQuantityDao() throws SQLException {
         dataBaseDriver = DataBaseDriver.getInstance();
-        orders = new ArrayList<>();
+        orderedQualities = new ArrayList<>();
+        orderedQualities = dataBaseDriver.getAllEntities(table, OrderedQuality.class);
     }
 
     /**
@@ -27,21 +28,9 @@ public class OrdersDao implements ICrudDao<Order> {
      *
      * @return
      */
-
-    public Integer getLastPk() throws SQLException {
-        Integer id = 0;
-
-        id = dataBaseDriver.getLastPk(table, this.id);
-        if (id == null) {
-            return 1;
-        }
-        return id;
-    }
-
     @Override
-    public List<Order> getAll() throws SQLException {
-        orders.addAll(dataBaseDriver.getAllEntities(table, Order.class));
-        return orders;
+    public List<OrderedQuality> getAll() {
+        return orderedQualities;
     }
 
     /**
@@ -57,27 +46,27 @@ public class OrdersDao implements ICrudDao<Order> {
     /**
      * Accepts an object and tries to save it to the corresponding table
      *
-     * @param order
+     * @param object
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      * @throws NoSuchMethodException
      * @throws SQLException
      */
     @Override
-    public void save(Order order)
-            throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        dataBaseDriver.insetToTable(table, order);
+    public void save(OrderedQuality object) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        dataBaseDriver.insetToTable(table, object);
         update();
     }
 
     /**
      * deletes specific object
      *
+     * @param object
      * @throws SQLException
      */
     @Override
-    public void delete(Order order) throws SQLException {
-        dataBaseDriver.deleteBy(table, id, order.getId().intValue());
+    public void delete(OrderedQuality object) throws SQLException {
+        dataBaseDriver.deleteBy(table, id, object.getId().intValue());
     }
 
     /**
@@ -98,17 +87,34 @@ public class OrdersDao implements ICrudDao<Order> {
      * @throws SQLException
      */
     @Override
-    public Order getById(int id) throws SQLException {
-        List<Order> result;
-        result = dataBaseDriver.getAllEqualTo(table, Order.class, this.id, String.valueOf(id));
-
-        return result.get(0);
+    public OrderedQuality getById(int id) throws SQLException {
+        OrderedQuality result = null;
+        for (OrderedQuality orderedQuality :
+                orderedQualities) {
+            if (orderedQuality.getId() == id) {
+                result = orderedQuality;
+            }
+        }
+        return result;
     }
 
-    public Order getByCustomerId(int custId) throws SQLException {
-        Order result;
-        result = dataBaseDriver
-                .getAllEqualTo(table, Order.class, "customer_id", String.valueOf(custId)).get(0);
+    /**
+     * returns multiple objects by id
+     *
+     * @param ids
+     * @return
+     * @throws SQLException
+     */
+    @Override
+    public List<OrderedQuality> getByIds(List<Integer> ids) throws SQLException {
+        List<OrderedQuality> result = new ArrayList<>();
+        for (OrderedQuality orderedQuality :
+                orderedQualities) {
+            if (ids.contains(orderedQuality.getId())) {
+                result.add(orderedQuality);
+            }
+        }
+
         return result;
     }
 
@@ -120,8 +126,7 @@ public class OrdersDao implements ICrudDao<Order> {
      */
     @Override
     public Integer getAllRecordsCount() throws SQLException {
-        return dataBaseDriver.countBy(table, id);
-
+        return orderedQualities.size();
     }
 
     /**
@@ -130,10 +135,9 @@ public class OrdersDao implements ICrudDao<Order> {
      * @return
      */
     @Override
-    public Integer getRandomId() throws SQLException {
-        update();
-        Order order = Randomizer.returnRandomFromList(orders);
-        return order.getId().intValue();
+    public Integer getRandomId() {
+        OrderedQuality orderedQuality = Randomizer.returnRandomFromList(orderedQualities);
+        return orderedQuality.getId();
     }
 
     /**
@@ -146,9 +150,8 @@ public class OrdersDao implements ICrudDao<Order> {
      */
     @Override
     public List<Integer> getRandomIds(int numberOrIds) throws Exception {
-        update();
         List<Integer> randomIds = new ArrayList<>();
-        if (numberOrIds <= orders.size()) {
+        if (numberOrIds <= orderedQualities.size()) {
             while (randomIds.size() < numberOrIds) {
                 int randID = getRandomId();
                 if (!randomIds.contains(randID)) {
@@ -161,27 +164,22 @@ public class OrdersDao implements ICrudDao<Order> {
         return randomIds;
     }
 
-    /**
-     * returns multiple objects by id
-     *
-     * @param ids
-     * @return
-     * @throws SQLException
-     */
-    @Override
-    public List<Order> getByIds(List<Integer> ids) throws SQLException {
-        List<Order> result;
-        String idsString = Formatter.listToString(ids);
-        result = dataBaseDriver.getAllIn(table, Order.class, this.id, idsString);
-
-
-        return result;
-    }
-
     @Override
     public void update() throws SQLException {
-        orders = dataBaseDriver.getAllEntities(table, Order.class);
+        orderedQualities = dataBaseDriver.getAllEntities(table, OrderedQuality.class);
     }
 
+    public Integer getLastPk() throws SQLException {
+        Integer id = 0;
 
+        for (OrderedQuality orderedQuality :
+                orderedQualities) {
+            if (id < orderedQuality.getId()) {
+                id = orderedQuality.getId();
+            }
+
+        }
+        return id;
+
+    }
 }

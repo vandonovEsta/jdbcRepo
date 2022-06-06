@@ -12,8 +12,8 @@ public class CustomerAddressFaker {
         CustomerAddress customerAddress = new CustomerAddress();
         customerAddress.setAddress(faker.address().streetAddress());
         customerAddress.setCity(faker.address().city());
-        customerAddress.setId(faker.number().randomNumber());
-        customerAddress.setCountry(faker.address().country());
+        customerAddress.setId(faker.number().numberBetween(1, Integer.MAX_VALUE));
+        customerAddress.setCountry(faker.address().country().replace("'", ""));
         customerAddress.setProvince(faker.address().cityPrefix());
         customerAddress.setState(faker.address().state());
         customerAddress.setPostalCode(Integer.valueOf(faker.numerify("####")));

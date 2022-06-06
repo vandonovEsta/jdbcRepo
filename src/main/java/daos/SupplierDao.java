@@ -2,8 +2,7 @@ package daos;
 
 import drivers.DataBaseDriver;
 import interfaces.ICrudDao;
-import pojos.orders.Order;
-import utils.Formatter;
+import pojos.suppliers.Supplier;
 import utils.Randomizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,15 +10,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrdersDao implements ICrudDao<Order> {
-    List<Order> orders;
+public class SupplierDao implements ICrudDao<Supplier> {
+    List<Supplier> suppliers;
     private DataBaseDriver dataBaseDriver;
-    private String table = "orders";
-    private String id = "order_id";
+    private String table = "suppliers";
+    private String id = "supplier_id";
 
-    public OrdersDao() {
+    public SupplierDao() throws SQLException {
         dataBaseDriver = DataBaseDriver.getInstance();
-        orders = new ArrayList<>();
+        suppliers = new ArrayList<>();
+        suppliers.addAll(dataBaseDriver.getAllEntities(table, Supplier.class));
     }
 
     /**
@@ -27,21 +27,9 @@ public class OrdersDao implements ICrudDao<Order> {
      *
      * @return
      */
-
-    public Integer getLastPk() throws SQLException {
-        Integer id = 0;
-
-        id = dataBaseDriver.getLastPk(table, this.id);
-        if (id == null) {
-            return 1;
-        }
-        return id;
-    }
-
     @Override
-    public List<Order> getAll() throws SQLException {
-        orders.addAll(dataBaseDriver.getAllEntities(table, Order.class));
-        return orders;
+    public List<Supplier> getAll() {
+        return suppliers;
     }
 
     /**
@@ -57,27 +45,28 @@ public class OrdersDao implements ICrudDao<Order> {
     /**
      * Accepts an object and tries to save it to the corresponding table
      *
-     * @param order
+     * @param object
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      * @throws NoSuchMethodException
      * @throws SQLException
      */
     @Override
-    public void save(Order order)
-            throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        dataBaseDriver.insetToTable(table, order);
+    public void save(Supplier object) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        dataBaseDriver.insetToTable(table, object);
         update();
     }
 
     /**
      * deletes specific object
      *
+     * @param object
      * @throws SQLException
      */
     @Override
-    public void delete(Order order) throws SQLException {
-        dataBaseDriver.deleteBy(table, id, order.getId().intValue());
+    public void delete(Supplier object) throws SQLException {
+        dataBaseDriver.deleteBy(table, id, object.getId());
+
     }
 
     /**
@@ -88,6 +77,7 @@ public class OrdersDao implements ICrudDao<Order> {
     @Override
     public void deleteAll() throws SQLException {
         dataBaseDriver.deleteAll(table);
+
     }
 
     /**
@@ -98,17 +88,34 @@ public class OrdersDao implements ICrudDao<Order> {
      * @throws SQLException
      */
     @Override
-    public Order getById(int id) throws SQLException {
-        List<Order> result;
-        result = dataBaseDriver.getAllEqualTo(table, Order.class, this.id, String.valueOf(id));
-
-        return result.get(0);
+    public Supplier getById(int id) throws SQLException {
+        Supplier result = null;
+        for (Supplier supplier :
+                suppliers) {
+            if (supplier.getId() == id) {
+                result = supplier;
+            }
+        }
+        return result;
     }
 
-    public Order getByCustomerId(int custId) throws SQLException {
-        Order result;
-        result = dataBaseDriver
-                .getAllEqualTo(table, Order.class, "customer_id", String.valueOf(custId)).get(0);
+    /**
+     * returns multiple objects by id
+     *
+     * @param ids
+     * @return
+     * @throws SQLException
+     */
+    @Override
+    public List<Supplier> getByIds(List<Integer> ids) throws SQLException {
+        List<Supplier> result = new ArrayList<>();
+        for (Supplier supplier :
+                suppliers) {
+            if (ids.contains(supplier.getId())) {
+                result.add(supplier);
+            }
+        }
+
         return result;
     }
 
@@ -120,8 +127,7 @@ public class OrdersDao implements ICrudDao<Order> {
      */
     @Override
     public Integer getAllRecordsCount() throws SQLException {
-        return dataBaseDriver.countBy(table, id);
-
+        return suppliers.size();
     }
 
     /**
@@ -130,10 +136,9 @@ public class OrdersDao implements ICrudDao<Order> {
      * @return
      */
     @Override
-    public Integer getRandomId() throws SQLException {
-        update();
-        Order order = Randomizer.returnRandomFromList(orders);
-        return order.getId().intValue();
+    public Integer getRandomId() {
+        Supplier supplier = Randomizer.returnRandomFromList(suppliers);
+        return supplier.getId();
     }
 
     /**
@@ -146,9 +151,8 @@ public class OrdersDao implements ICrudDao<Order> {
      */
     @Override
     public List<Integer> getRandomIds(int numberOrIds) throws Exception {
-        update();
         List<Integer> randomIds = new ArrayList<>();
-        if (numberOrIds <= orders.size()) {
+        if (numberOrIds <= suppliers.size()) {
             while (randomIds.size() < numberOrIds) {
                 int randID = getRandomId();
                 if (!randomIds.contains(randID)) {
@@ -161,27 +165,8 @@ public class OrdersDao implements ICrudDao<Order> {
         return randomIds;
     }
 
-    /**
-     * returns multiple objects by id
-     *
-     * @param ids
-     * @return
-     * @throws SQLException
-     */
-    @Override
-    public List<Order> getByIds(List<Integer> ids) throws SQLException {
-        List<Order> result;
-        String idsString = Formatter.listToString(ids);
-        result = dataBaseDriver.getAllIn(table, Order.class, this.id, idsString);
-
-
-        return result;
-    }
-
     @Override
     public void update() throws SQLException {
-        orders = dataBaseDriver.getAllEntities(table, Order.class);
+        suppliers = dataBaseDriver.getAllEntities(table, Supplier.class);
     }
-
-
 }
